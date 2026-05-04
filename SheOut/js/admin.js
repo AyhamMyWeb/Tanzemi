@@ -93,7 +93,20 @@ async function renderProducts() {
         return;
     }
     
-    grid.innerHTML = allProducts.map(product => `
+    // Fetch images for all products
+    const productsWithImages = await Promise.all(allProducts.map(async (product) => {
+        try {
+            const images = await fetch(`${API_BASE}/ProductImage/FindByProductID/${product.id}`).then(r => r.json());
+            return {
+                ...product,
+                imageUrl: images && images.length > 0 ? images[0].imageUrl : null
+            };
+        } catch (e) {
+            return { ...product, imageUrl: null };
+        }
+    }));
+    
+    grid.innerHTML = productsWithImages.map(product => `
         <div class="admin-card">
             <img src="${product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" 
                  alt="${product.productName}" 
@@ -109,27 +122,15 @@ async function renderProducts() {
     `).join('');
 }
 
-function openProductModal(productId = null) {
+// Open product modal for adding new product
+function openProductModal() {
     const modal = document.getElementById('productModal');
     const form = document.getElementById('productForm');
     const title = document.getElementById('modalTitle');
     
     form.reset();
-    
-    if (productId) {
-        const product = allProducts.find(p => p.id === productId);
-        if (product) {
-            document.getElementById('productId').value = product.id;
-            document.getElementById('productName').value = product.productName;
-            document.getElementById('productDescription').value = product.productDescription || '';
-            document.getElementById('productPrice').value = product.price;
-            document.getElementById('productImage').value = product.imageUrl || '';
-            title.textContent = 'تعديل المنتج';
-        }
-    } else {
-        document.getElementById('productId').value = '';
-        title.textContent = 'إضافة منتج جديد';
-    }
+    document.getElementById('productId').value = '';
+    title.textContent = 'إضافة منتج جديد';
     
     modal.classList.add('active');
 }
@@ -141,7 +142,8 @@ function closeProductModal() {
 async function saveProduct(event) {
     event.preventDefault();
     
-    const productId = document.getElementById('productId').value;
+    const productId = document.getElementById('productId').value.trim();
+    const imageUrl = document.getElementById('productImage').value.trim();
     
     // Validate product data
     const productName = document.getElementById('productName').value.trim();
@@ -154,40 +156,100 @@ async function saveProduct(event) {
     
     const productData = {
         productName: productName,
-        productDescription: document.getElementById('productDescription').value.trim(),
-        price: price,
-        imageUrl: document.getElementById('productImage').value.trim() || null
+        productDescription: document.getElementById('productDescription').value.trim() || '',
+        price: price
     };
     
     try {
-        let response;
+        let result;
         
-        if (productId) {
-            // Update existing product - ID must be in URL
+        if (productId && productId !== '') {
+            // Update existing product
             console.log('Updating product with ID:', productId);
-            response = await fetch(`${API_BASE}/Product/${productId}`, {
+            
+            // First update the product
+            const updateResponse = await fetch(`${API_BASE}/Product/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(productData)
             });
+            
+            const updateResult = await updateResponse.text();
+            console.log('Update response:', updateResult);
+            
+            // Handle image separately if provided
+            if (imageUrl) {
+                try {
+                    // Check if product already has images
+                    const existingImages = await fetch(`${API_BASE}/ProductImage/FindByProductID/${productId}`).then(r => r.json());
+                    
+                    if (existingImages && existingImages.length > 0) {
+                        // Update first image
+                        const imgData = {
+                            productID: parseInt(productId),
+                            imageUrl: imageUrl
+                        };
+                        await fetch(`${API_BASE}/ProductImage/${existingImages[0].id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(imgData)
+                        });
+                    } else {
+                        // Create new image
+                        const imgData = {
+                            productID: parseInt(productId),
+                            imageUrl: imageUrl
+                        };
+                        await fetch(`${API_BASE}/ProductImage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(imgData)
+                        });
+                    }
+                } catch (imgError) {
+                    console.error('Error handling image:', imgError);
+                }
+            }
+            
+            result = updateResult;
         } else {
             // Create new product
             console.log('Creating new product');
-            response = await fetch(`${API_BASE}/Product`, {
+            const createResponse = await fetch(`${API_BASE}/Product`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(productData)
             });
+            
+            result = await createResponse.text();
+            console.log('Create response:', result);
+            
+            // If image URL provided and product was created successfully
+            if (imageUrl && result && result !== '-1') {
+                try {
+                    const newProductId = parseInt(result);
+                    const imgData = {
+                        productID: newProductId,
+                        imageUrl: imageUrl
+                    };
+                    await fetch(`${API_BASE}/ProductImage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(imgData)
+                    });
+                } catch (imgError) {
+                    console.error('Error creating image:', imgError);
+                }
+            }
         }
         
-        const result = await response.text();
-        console.log('Server response:', result);
+        console.log('Final result:', result);
         
-        if (response.ok && (result === 'true' || result === 'True' || !isNaN(parseInt(result)))) {
+        if (result === 'true' || result === 'True' || (result && !isNaN(parseInt(result)) && parseInt(result) !== -1)) {
             alert('تم حفظ المنتج بنجاح!');
             closeProductModal();
             await loadProducts();
@@ -202,7 +264,42 @@ async function saveProduct(event) {
 }
 
 async function editProduct(productId) {
-    openProductModal(productId);
+    try {
+        // Fetch product details
+        const product = await fetch(`${API_BASE}/Product/FindByID/${productId}`).then(r => r.json());
+        
+        if (!product) {
+            alert('المنتج غير موجود');
+            return;
+        }
+        
+        // Fetch product images
+        let imageUrl = '';
+        try {
+            const images = await fetch(`${API_BASE}/ProductImage/FindByProductID/${productId}`).then(r => r.json());
+            if (images && images.length > 0) {
+                imageUrl = images[0].imageUrl || '';
+            }
+        } catch (imgError) {
+            console.log('No images found for product:', productId);
+        }
+        
+        // Populate form fields
+        document.getElementById('productId').value = product.id;
+        document.getElementById('productName').value = product.productName || '';
+        document.getElementById('productDescription').value = product.productDescription || '';
+        document.getElementById('productPrice').value = product.price || 0;
+        document.getElementById('productImage').value = imageUrl;
+        
+        // Update modal title
+        document.getElementById('modalTitle').textContent = 'تعديل المنتج';
+        
+        // Show modal
+        document.getElementById('productModal').classList.add('active');
+    } catch (error) {
+        console.error('Error loading product for edit:', error);
+        alert('فشل تحميل تفاصيل المنتج');
+    }
 }
 
 async function deleteProduct(productId) {
