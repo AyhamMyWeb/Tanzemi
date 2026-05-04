@@ -29,10 +29,10 @@ async function loadDashboard() {
 async function loadStats() {
     try {
         const [products, orders, reports, users] = await Promise.all([
-            fetch(`${API_BASE}/Product`).then(r => r.json()),
-            fetch(`${API_BASE}/Order`).then(r => r.json()),
-            fetch(`${API_BASE}/Report`).then(r => r.json()),
-            fetch(`${API_BASE}/User`).then(r => r.json())
+            fetch(`${API_BASE}/Product`).then(r => r.json()).catch(() => []),
+            fetch(`${API_BASE}/Order`).then(r => r.json()).catch(() => []),
+            fetch(`${API_BASE}/Report`).then(r => r.json()).catch(() => []),
+            fetch(`${API_BASE}/User`).then(r => r.json()).catch(() => [])
         ]);
         
         document.getElementById('totalProducts').textContent = products.length || 0;
@@ -49,8 +49,26 @@ function showSection(sectionName) {
     document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active'));
     document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
     
-    document.getElementById(`${sectionName}-section`).classList.add('active');
-    event.target.classList.add('active');
+    const section = document.getElementById(`${sectionName}-section`);
+    if (section) {
+        section.classList.add('active');
+    }
+    
+    // Update active button
+    const activeBtn = event.target.closest('.admin-nav-btn');
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // Update header
+    const headers = {
+        'dashboard': 'لوحة التحكم',
+        'products': 'إدارة المنتجات',
+        'orders': 'إدارة الطلبات',
+        'reports': 'بلاغات الدعم الفني',
+        'news': 'إدارة الأخبار'
+    };
+    document.getElementById('pageHeader').textContent = headers[sectionName] || 'لوحة التحكم';
 }
 
 // Products Management
@@ -70,16 +88,18 @@ async function loadProducts() {
 async function renderProducts() {
     const grid = document.getElementById('productsGrid');
     
-    if (allProducts.length === 0) {
-        grid.innerHTML = '<p>لا توجد منتجات حالياً</p>';
+    if (!allProducts || allProducts.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><h3>لا توجد منتجات حالياً</h3></div>';
         return;
     }
     
     grid.innerHTML = allProducts.map(product => `
         <div class="admin-card">
-            <img src="${product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.productName}">
+            <img src="${product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                 alt="${product.productName}" 
+                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
             <h3>${product.productName}</h3>
-            <p>${product.productDescription || 'لا يوجد وصف'}</p>
+            <p>${product.productDescription ? product.productDescription.substring(0, 100) + '...' : 'لا يوجد وصف'}</p>
             <p><strong>السعر:</strong> $${product.price}</p>
             <div style="margin-top: 15px;">
                 <button class="btn-edit" onclick="editProduct(${product.id})">تعديل</button>
@@ -122,18 +142,29 @@ async function saveProduct(event) {
     event.preventDefault();
     
     const productId = document.getElementById('productId').value;
+    
+    // Validate product data
+    const productName = document.getElementById('productName').value.trim();
+    const price = parseFloat(document.getElementById('productPrice').value);
+    
+    if (!productName || isNaN(price) || price <= 0) {
+        alert('الرجاء إدخال اسم المنتج وسعر صحيح');
+        return;
+    }
+    
     const productData = {
-        productName: document.getElementById('productName').value,
-        productDescription: document.getElementById('productDescription').value,
-        price: parseFloat(document.getElementById('productPrice').value),
-        imageUrl: document.getElementById('productImage').value || null
+        productName: productName,
+        productDescription: document.getElementById('productDescription').value.trim(),
+        price: price,
+        imageUrl: document.getElementById('productImage').value.trim() || null
     };
     
     try {
         let response;
         
         if (productId) {
-            // Update existing product
+            // Update existing product - ID must be in URL
+            console.log('Updating product with ID:', productId);
             response = await fetch(`${API_BASE}/Product/${productId}`, {
                 method: 'PUT',
                 headers: {
@@ -143,6 +174,7 @@ async function saveProduct(event) {
             });
         } else {
             // Create new product
+            console.log('Creating new product');
             response = await fetch(`${API_BASE}/Product`, {
                 method: 'POST',
                 headers: {
@@ -152,17 +184,20 @@ async function saveProduct(event) {
             });
         }
         
-        if (response.ok) {
+        const result = await response.text();
+        console.log('Server response:', result);
+        
+        if (response.ok && (result === 'true' || result === 'True' || !isNaN(parseInt(result)))) {
             alert('تم حفظ المنتج بنجاح!');
             closeProductModal();
             await loadProducts();
             await loadStats();
         } else {
-            alert('فشل حفظ المنتج');
+            alert(`فشل حفظ المنتج. الاستجابة: ${result}`);
         }
     } catch (error) {
         console.error('Error saving product:', error);
-        alert('حدث خطأ أثناء الحفظ');
+        alert('حدث خطأ أثناء الحفظ: ' + error.message);
     }
 }
 
