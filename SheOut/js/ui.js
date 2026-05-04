@@ -43,13 +43,13 @@ const UI = {
                 if (window.Products) Products.loadAllProducts();
                 break;
             case 'orders':
-                if (window.Orders) Orders.loadUserOrders();
+                if (window.Orders) Orders.loadUserOrders().catch(err => console.error('Error loading orders:', err));
                 break;
             case 'favorites':
-                if (window.Favorites) Favorites.loadUserFavorites();
+                if (window.Favorites) Favorites.loadUserFavorites().catch(err => console.error('Error loading favorites:', err));
                 break;
             case 'reports':
-                if (window.Reports) Reports.loadUserReports();
+                if (window.Reports) Reports.loadUserReports().catch(err => console.error('Error loading reports:', err));
                 break;
             case 'settings':
                 // Profile is already updated by Auth
