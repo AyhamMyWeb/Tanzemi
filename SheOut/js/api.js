@@ -11,6 +11,7 @@ const api = {
             method,
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
         };
 
@@ -21,24 +22,38 @@ const api = {
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
             
+            // Handle 404 gracefully
+            if (response.status === 404) {
+                return null;
+            }
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            // Handle empty responses
+            const text = await response.text();
+            if (!text || text.trim() === '') {
+                return method === 'DELETE' || method === 'PUT' ? true : null;
+            }
+
             // Handle DELETE requests that return boolean
             if (method === 'DELETE') {
-                const text = await response.text();
                 return text === 'true' || text === 'True';
             }
 
             // Handle PUT requests that return boolean
             if (method === 'PUT') {
-                const text = await response.text();
                 return text === 'true' || text === 'True';
             }
 
-            const data = await response.json();
-            return data;
+            // Try to parse JSON
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.warn('Response is not JSON:', text);
+                return text;
+            }
         } catch (error) {
             console.error('API Error:', error);
             throw error;
