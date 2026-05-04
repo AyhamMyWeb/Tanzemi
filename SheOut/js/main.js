@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup profile save handler
     setupProfileSave();
     
+    // Setup admin button handler
+    setupAdminButton();
+    
     console.log('SheOut App Initialized Successfully!');
 });
 
@@ -46,6 +49,20 @@ function setupProfileSave() {
     if (saveProfileBtn) {
         saveProfileBtn.addEventListener('click', () => {
             Auth.updateProfile();
+        });
+    }
+}
+
+function setupAdminButton() {
+    const adminBtn = document.getElementById('admin-btn');
+    if (adminBtn) {
+        adminBtn.addEventListener('click', () => {
+            const user = JSON.parse(localStorage.getItem('sheout_user') || 'null');
+            if (user && user.role === 1) {
+                window.location.href = 'pages/admin.html';
+            } else {
+                alert('غير مسموح لك بالدخول هنا.');
+            }
         });
     }
 }

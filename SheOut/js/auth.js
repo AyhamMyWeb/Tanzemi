@@ -158,11 +158,21 @@ const Auth = {
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
         const splashScreen = document.getElementById('splash-screen');
+        const adminBtn = document.getElementById('admin-btn');
 
         if (this.currentUser) {
             // User is logged in
             if (authContainer) authContainer.classList.add('hidden');
             if (appContainer) appContainer.classList.remove('hidden');
+            
+            // Show admin button for admin users (role === 1)
+            if (adminBtn) {
+                if (this.currentUser.role === 1) {
+                    adminBtn.style.display = 'block';
+                } else {
+                    adminBtn.style.display = 'none';
+                }
+            }
             
             // Update profile display
             this.updateProfileDisplay();
@@ -177,6 +187,7 @@ const Auth = {
             // User is not logged in
             if (authContainer) authContainer.classList.remove('hidden');
             if (appContainer) appContainer.classList.add('hidden');
+            if (adminBtn) adminBtn.style.display = 'none';
         }
 
         // Hide splash screen after delay
