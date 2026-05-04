@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SheOut - تسوقي بذكاء</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-theme="light">
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-logo">
+            <i class="fas fa-shopping-bag"></i>
+            <h1>SheOut</h1>
+        </div>
+    </div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-container hidden">
+        <div class="auth-card glass-card">
+            <div class="auth-header">
+                <i class="fas fa-shopping-bag logo-icon"></i>
+                <h1 class="cairo-font">SheOut</h1>
+                <p>تسوقي بذكاء وأنتي في مكانك</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <h2 class="cairo-font mb-20">تسجيل الدخول</h2>
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> اسم المستخدم</label>
+                    <input type="text" id="login-username" class="input-luxury" placeholder="أدخلي اسم المستخدم" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="login-password" class="input-luxury" placeholder="أدخلي كلمة المرور" required>
+                </div>
+                <button type="submit" class="btn-primary btn-full"><i class="fas fa-sign-in-alt"></i> دخول</button>
+                <p class="auth-switch">ليس لديكِ حساب؟ <a href="#" id="show-register">أنشئي حساب جديد</a></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden">
+                <h2 class="cairo-font mb-20">إنشاء حساب جديد</h2>
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> اسم المستخدم</label>
+                    <input type="text" id="register-username" class="input-luxury" placeholder="اختاري اسم مستخدم" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="register-email" class="input-luxury" placeholder="أدخلي البريد الإلكتروني" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> رقم الهاتف</label>
+                    <input type="tel" id="register-phone" class="input-luxury" placeholder="أدخلي رقم الهاتف">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="register-password" class="input-luxury" placeholder="اختاري كلمة مرور" required>
+                </div>
+                <button type="submit" class="btn-primary btn-full"><i class="fas fa-user-plus"></i> إنشاء الحساب</button>
+                <p class="auth-switch">لديكِ حساب بالفعل؟ <a href="#" id="show-login">سجلي الدخول</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>SheOut</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="ابحثي عن منتج...">
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" id="notifications-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notification-badge">0</span>
+                    </button>
+                    <button class="header-btn" id="favorites-btn">
+                        <i class="fas fa-heart"></i>
+                        <span class="badge" id="favorites-badge">0</span>
+                    </button>
+                    <button class="header-btn" id="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge" id="cart-badge">0</span>
+                    </button>
+                    <button class="header-btn" id="profile-btn">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-container">
+            <button class="nav-btn active" data-section="home">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </button>
+            <button class="nav-btn" data-section="products">
+                <i class="fas fa-store"></i>
+                <span>المنتجات</span>
+            </button>
+            <button class="nav-btn" data-section="orders">
+                <i class="fas fa-box"></i>
+                <span>طلباتي</span>
+            </button>
+            <button class="nav-btn" data-section="favorites">
+                <i class="fas fa-heart"></i>
+                <span>المفضلة</span>
+            </button>
+            <button class="nav-btn" data-section="reports">
+                <i class="fas fa-flag"></i>
+                <span>البلاغات</span>
+            </button>
+            <button class="nav-btn" data-section="settings">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Section -->
+            <section id="home" class="section active">
+                <div class="hero-banner glass-card">
+                    <h1 class="cairo-font">أهلاً بكِ في SheOut 👋</h1>
+                    <p>اكتشفي أحدث المنتجات بأفضل الأسعار</p>
+                </div>
+
+                <!-- Categories -->
+                <div class="categories-section">
+                    <h2 class="section-title cairo-font">التصنيفات</h2>
+                    <div class="categories-grid" id="categories-grid">
+                        <div class="category-card">
+                            <i class="fas fa-tshirt"></i>
+                            <span>ملابس</span>
+                        </div>
+                        <div class="category-card">
+                            <i class="fas fa-shoe-prints"></i>
+                            <span>أحذية</span>
+                        </div>
+                        <div class="category-card">
+                            <i class="fas fa-gem"></i>
+                            <span>مجوهرات</span>
+                        </div>
+                        <div class="category-card">
+                            <i class="fas fa-pump-soap"></i>
+                            <span>تجميل</span>
+                        </div>
+                        <div class="category-card">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>إلكترونيات</span>
+                        </div>
+                        <div class="category-card">
+                            <i class="fas fa-home"></i>
+                            <span>منزل</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Products -->
+                <div class="products-section">
+                    <h2 class="section-title cairo-font">منتجات مميزة</h2>
+                    <div class="products-grid" id="featured-products"></div>
+                </div>
+
+                <!-- News Section -->
+                <div class="news-section">
+                    <h2 class="section-title cairo-font">آخر الأخبار</h2>
+                    <div class="news-list" id="news-list"></div>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section id="products" class="section">
+                <div class="section-header">
+                    <h1 class="cairo-font">جميع المنتجات</h1>
+                    <div class="filter-controls">
+                        <select id="category-filter" class="input-luxury">
+                            <option value="">كل التصنيفات</option>
+                        </select>
+                        <select id="price-sort" class="input-luxury">
+                            <option value="">ترتيب حسب السعر</option>
+                            <option value="asc">الأقل سعراً</option>
+                            <option value="desc">الأعلى سعراً</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="products-grid" id="all-products"></div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="section">
+                <h1 class="cairo-font section-title">طلباتي</h1>
+                <div class="orders-list" id="orders-list"></div>
+            </section>
+
+            <!-- Favorites Section -->
+            <section id="favorites" class="section">
+                <h1 class="cairo-font section-title">قائمة المفضلة</h1>
+                <div class="products-grid" id="favorites-products"></div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="section">
+                <h1 class="cairo-font section-title">البلاغات والمساعدة</h1>
+                <div class="glass-card">
+                    <form id="report-form">
+                        <div class="form-group">
+                            <label>نوع البلاغ</label>
+                            <select id="report-category" class="input-luxury" required>
+                                <option value="0">مساعدة</option>
+                                <option value="1">مشكلة تقنية</option>
+                                <option value="2">استفسار</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>عنوان البلاغ</label>
+                            <input type="text" id="report-title" class="input-luxury" placeholder="عنوان مختصر" required>
+                        </div>
+                        <div class="form-group">
+                            <label>تفاصيل البلاغ</label>
+                            <textarea id="report-details" class="input-luxury" rows="5" placeholder="اشرحي المشكلة بالتفصيل..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full"><i class="fas fa-paper-plane"></i> إرسال البلاغ</button>
+                    </form>
+                </div>
+                <div class="reports-history mt-20">
+                    <h2 class="cairo-font mb-20">سجل البلاغات</h2>
+                    <div id="reports-list"></div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section">
+                <h1 class="cairo-font section-title">الإعدادات</h1>
+                <div class="glass-card settings-card">
+                    <div class="profile-section">
+                        <div class="profile-avatar" id="profile-avatar-display">👤</div>
+                        <h3 id="profile-name-display">اسم المستخدم</h3>
+                        <p id="profile-email-display">البريد الإلكتروني</p>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3 class="cairo-font mb-20">🎨 المظهر</h3>
+                        <div class="theme-toggle">
+                            <span>الوضع الداكن</span>
+                            <input type="checkbox" id="theme-toggle" class="toggle-switch">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="cairo-font mb-20">👤 تعديل الملف الشخصي</h3>
+                        <div class="form-group">
+                            <label>اسم المستخدم</label>
+                            <input type="text" id="edit-username" class="input-luxury">
+                        </div>
+                        <div class="form-group">
+                            <label>البريد الإلكتروني</label>
+                            <input type="email" id="edit-email" class="input-luxury">
+                        </div>
+                        <div class="form-group">
+                            <label>رقم الهاتف</label>
+                            <input type="tel" id="edit-phone" class="input-luxury">
+                        </div>
+                        <button class="btn-primary" id="save-profile-btn"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 class="cairo-font mb-20 text-red">⚠️ منطقة الخطر</h3>
+                        <button class="btn-danger btn-full" id="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content glass-card">
+            <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
+            <div class="product-detail">
+                <div class="product-images" id="product-images"></div>
+                <div class="product-info">
+                    <h2 class="cairo-font" id="product-name"></h2>
+                    <p class="product-price" id="product-price"></p>
+                    <p class="product-description" id="product-description"></p>
+                    <div class="product-actions">
+                        <button class="btn-primary" id="add-to-cart-btn"><i class="fas fa-shopping-cart"></i> أضف للسلة</button>
+                        <button class="btn-secondary" id="add-to-favorites-btn"><i class="fas fa-heart"></i> أضف للمفضلة</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content glass-card">
+            <button class="modal-close" id="close-cart-modal"><i class="fas fa-times"></i></button>
+            <h2 class="cairo-font mb-20">🛒 سلة التسوق</h2>
+            <div id="cart-items"></div>
+            <div class="cart-summary">
+                <div class="cart-total">
+                    <span>المجموع:</span>
+                    <span id="cart-total-amount">0 ر.س</span>
+                </div>
+                <button class="btn-primary btn-full" id="checkout-btn"><i class="fas fa-credit-card"></i> إتمام الشراء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notifications-panel" class="notifications-panel hidden">
+        <div class="panel-header">
+            <h3 class="cairo-font">🔔 الإشعارات</h3>
+            <button id="close-notifications"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="notifications-list"></div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/news.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
