@@ -177,11 +177,17 @@ const Auth = {
             // Update profile display
             this.updateProfileDisplay();
             
-            // Load user-specific data
+            // Load user-specific data with error handling
             setTimeout(() => {
-                if (window.Favorites) Favorites.loadUserFavorites();
-                if (window.Orders) Orders.loadUserOrders();
-                if (window.Reports) Reports.loadUserReports();
+                if (window.Favorites) {
+                    Favorites.loadUserFavorites().catch(err => console.error('Error loading favorites:', err));
+                }
+                if (window.Orders) {
+                    Orders.loadUserOrders().catch(err => console.error('Error loading orders:', err));
+                }
+                if (window.Reports) {
+                    Reports.loadUserReports().catch(err => console.error('Error loading reports:', err));
+                }
             }, 100);
         } else {
             // User is not logged in

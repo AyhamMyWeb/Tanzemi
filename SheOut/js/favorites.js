@@ -28,8 +28,15 @@ const Favorites = {
                 const products = await Promise.all(
                     this.favorites.map(async fav => {
                         try {
-                            return await api.product.getById(fav.productId);
+                            // Handle both camelCase and PascalCase property names
+                            const productId = fav.productId || fav.productID;
+                            if (!productId) {
+                                console.warn('Favorite missing productId:', fav);
+                                return null;
+                            }
+                            return await api.product.getById(productId);
                         } catch (e) {
+                            console.error('Error loading product for favorite:', e);
                             return null;
                         }
                     })
@@ -87,11 +94,11 @@ const Favorites = {
 
             if (exists) {
                 // Remove from favorites
-                const fav = this.favorites.find(f => f.productId === productId);
+                const fav = this.favorites.find(f => (f.productId || f.productID) === productId);
                 if (fav) {
                     const deleted = await api.favourite.delete(fav.id);
                     if (deleted) {
-                        this.favorites = this.favorites.filter(f => f.productId !== productId);
+                        this.favorites = this.favorites.filter(f => (f.productId || f.productID) !== productId);
                         UI.showToast('تم الحذف من المفضلة', 'success');
                     }
                 }
