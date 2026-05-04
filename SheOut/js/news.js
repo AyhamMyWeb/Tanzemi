@@ -35,7 +35,7 @@ const News = {
 
     renderNewsItem(news) {
         const date = news.date ? UI.formatDate(news.date) : '';
-        const message = news.message || news.newMessage || news.content || '';
+        const message = news.message || news.newsMessage || news.content || '';
 
         return `
             <div class="news-item">
